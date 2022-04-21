@@ -1,0 +1,116 @@
+local DSS = game:GetService("DataStoreService")
+local banDS = DSS:GetDataStore("banDS")
+local msgUI = game.ReplicatedStorage.MessageGui
+
+game.Players.PlayerAdded:Connect(function(plr)
+	local key = plr.UserId.."-banned"
+	local succ, val = pcall(function()
+		return banDS:GetAsync(key)
+	end)
+	
+	if (succ) then
+		if (val) then
+			if (val[2] == true) then
+				plr:Kick("\n You are permanently banned. \n Reason: \n"..val[1])
+				print("Player has been banned and kicked!")
+			end
+		end
+	else
+		print("There was an error while checking: "..plr.UserId.." , "..plr.Name)
+		warn(val)
+	end
+end)
+
+game.ReplicatedStorage.SwordRequest.OnServerEvent:Connect(function(player, plrToGiveSword, swordMsg)
+	local plr = game.Players:FindFirstChild(plrToGiveSword)
+	if plr then
+		game.ServerStorage.ClassicSword:Clone().Parent = plr.Backpack
+		print(plrToGiveSword .. " got a sword.")
+		else warn("No sword for player :(")
+	end
+end)
+
+game.ReplicatedStorage.CommitDieRequest.OnServerEvent:Connect(function(player, plrToCommitDie, dieMsg)
+	local plr = game.Players:FindFirstChild(plrToCommitDie)
+	if plr then
+		print(plr)
+		local character = plr.Character or plr.CharacterAdded:Wait()
+		local head = character.Head
+		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
+		task.wait(1)
+		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
+		task.wait(1)
+		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
+		task.wait(1)
+		character.Head:Destroy()
+		print("haha "..plrToCommitDie .."  went brrr")
+		else warn("no player to commit die :(")
+	end
+end)
+
+game.ReplicatedStorage.BtoolsRequest.OnServerEvent:Connect(function(plr, plrToGiveBtools, btoolsMsg)
+	local plr = game.Players:FindFirstChild(plrToGiveBtools)
+	if plr then
+		game.ServerStorage.BuildingTools.Parent = plr.Backpack
+		print(btoolsMsg)
+		else warn("Couldn't find player: action failed")
+	end
+end)
+
+local remote = game.ReplicatedStorage.MessageRequest
+
+
+
+game.ReplicatedStorage.BanRequest.OnServerEvent:Connect(function(plr, plrToBan, BanMsg)
+	print(plrToBan)
+	local key = plrToBan.."-banned"
+	local success, err = pcall(function()
+		banDS:SetAsync(key, {BanMsg, true})
+	end)
+	local playerName = game.Players:GetNameFromUserIdAsync(plrToBan)
+	if game.Players:FindFirstChild(playerName) then
+		game.Players:FindFirstChild(playerName):Kick("You are banned from the game! \n Reason: \n"..BanMsg)
+	end
+end)
+
+game.ReplicatedStorage.KickRequest.OnServerEvent:Connect(function(plr, plrToKick, kickMsg)
+	print(plrToKick)
+	game.Players:FindFirstChild(plrToKick):Kick(kickMsg)
+end)
+
+game.ReplicatedStorage.AskServer.OnServerEvent:Connect(function(plr, plrid)
+	print("There was an onserver event on the AskServer!")
+	print(plrid)
+	local succ, err = pcall(function()
+		return banDS:GetAsync(plrid.."-banned")
+	end)
+	
+	if succ then
+		if err then
+			if err[2] == true then
+				local boolean = true
+				print("boolean is equal to true")
+				game.ReplicatedStorage.SendClient:FireClient(plr, boolean)
+				print("sended the boolean (true) to the client")
+			else
+				local boolean = false
+				print("boolean is equal to false")
+				game.ReplicatedStorage.SendClient:FireClient(plr, boolean)
+				print("sended the boolean (false) to the client")
+			end
+		else
+			local boolean = false
+			print("boolean is equal to false")
+			game.ReplicatedStorage.SendClient:FireClient(plr, boolean)
+			print("sended the boolean (false) to the client")
+		end	
+	end 
+end)
+
+game.ReplicatedStorage.UnbanRequest.OnServerEvent:Connect(function(plr, plrToUnban, msg)
+	local key = plrToUnban.."-banned"
+	local success, err = pcall(function()
+		banDS:SetAsync(key, {msg, false})
+	end)
+end)
+
