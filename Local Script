@@ -1,0 +1,177 @@
+local Toggle = script.Parent.Toggle				
+local Frame = script.Parent.AdminFrame
+local suggestion = Frame.Suggestion
+local mod = game.Players.LocalPlayer
+local serverRemote = game.ReplicatedStorage.MessageRequest
+local msgUI = game.ReplicatedStorage.MessageGui
+
+Toggle.MouseButton1Click:Connect(function()
+	if script.Parent.AdminFrame.Position == UDim2.new(0.5,0,0.5,0) then
+		script.Parent.AdminFrame:TweenPosition(UDim2.new(0.5,0,-1,0), "InOut", "Quart", 1, false)
+	else
+		script.Parent.AdminFrame:TweenPosition(UDim2.new(0.5,0,0.5,0), "InOut", "Quart", 1, false)
+	end
+end)
+
+local plr
+
+function findPlayer(name) 							
+	for i, plr in pairs(game.Players:GetPlayers()) do
+		name = name:lower()
+		local testName = (plr.Name):lower():sub(1, #name) 
+		if (testName == name) then
+			print("Found the player's name! Suggesting it to the moderator.")
+			return plr
+		end
+	end
+end
+
+function reload()
+	Frame.LeftSide.PlrNameLabel.Text = "--------"
+	Frame.LeftSide.idLabel.Text = "--------"
+	Frame.LeftSide.UserImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+	Frame.RightSide.Message.Text = ""
+	
+	Frame.RightSide.Ban.Visible = false
+	Frame.RightSide.Kick.Visible = false
+	Frame.RightSide.UnBan.Visible = false
+end
+
+function setup()
+	Frame.RightSide.Ban.Visible = true
+	Frame.RightSide.Ban.Text = "Ban"
+	Frame.RightSide.Kick.Visible = true
+	Frame.RightSide.UnBan.Visible = true
+end
+
+Frame.RightSide.MessageSubmit.MouseButton1Click:Connect(function(text)
+	local gui = game.ReplicatedStorage.MessageGui
+	gui.Frame.SenderLabel.Text = game.Players.LocalPlayer.Name
+	gui.Frame.HeadshotLabel.Image = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+end)
+
+game.ReplicatedStorage.MessageClientRequest.OnClientEvent:Connect(function(text)
+	msgUI.Frame.SenderLabel.Text = game.Players.LocalPlayer.Name
+	msgUI.Frame.HeadShotLabel.Text = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+	msgUI.Frame.MessageLabel.Text = text
+	local clone = msgUI:Clone()
+	clone.Parent = game.Players.LocalPlayer.PlayerGui
+end)
+
+
+suggestion.Activated:Connect(function()
+	if (Frame.Suggestion.Text ~= "") then
+		Frame.LeftSide.PlrNameLabel.Text = Frame.Suggestion.Text
+		suggestion.Visible = false
+		Frame.SearchBar.Text = ""
+		local playerN = Frame.LeftSide.PlrNameLabel.Text
+		local playerI = game.Players:FindFirstChild(playerN).UserId
+		Frame.LeftSide.idLabel.Text = playerI
+		
+		Frame.LeftSide.UserImage.Image = game.Players:GetUserThumbnailAsync(playerI, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+		setup()
+	end
+end)
+
+Frame.SearchBar:GetPropertyChangedSignal("Text"):Connect(function()
+		
+	if (#Frame.SearchBar.Text > 2) then				
+		local plr = findPlayer(Frame.SearchBar.Text)
+		if plr then
+			Frame.Suggestion.Visible = true
+			Frame.Suggestion.Text = plr.Name
+		end
+	end
+end)
+
+Frame.SearchBar.FocusLost:Connect(function()
+	if Frame.SearchBar.FocusLost and Frame.Suggestion.Visible == false then
+		local text = Frame.SearchBar.Text
+		local plrid = game.Players:GetUserIdFromNameAsync(text)
+		local plrName = game.Players:GetNameFromUserIdAsync(plrid)
+		Frame.LeftSide.idLabel.Text = plrid
+		Frame.LeftSide.PlrNameLabel.Text = plrName
+
+		Frame.LeftSide.UserImage.Image = game.Players:GetUserThumbnailAsync(plrid, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+		game.ReplicatedStorage.AskServer:FireServer(plrid)
+		Frame.SearchBar.Text = ""
+		setup()
+	end
+end)
+
+Frame.RightSide.Ban.MouseButton1Click:Connect(function()
+	print("BanButton has been clicked!")
+	local plrToBan = Frame.LeftSide.idLabel.Text
+	local BanMsg = Frame.RightSide.Message.Text
+	game.ReplicatedStorage.BanRequest:FireServer(plrToBan, BanMsg)
+	Frame.RightSide.Ban.Text = "Banning player"
+	wait(1)
+	Frame.RightSide.Ban.Text = "Succesfully banned the player!"
+	wait(2)
+	Frame.RightSide.Ban.Text = "Ban"
+	reload()
+end)
+
+
+Frame.RightSide.Kick.MouseButton1Click:Connect(function()
+	local plrToKick = Frame.LeftSide.PlrNameLabel.Text
+	local KickMsg = Frame.RightSide.Message.Text
+	game.ReplicatedStorage.KickRequest:FireServer(plrToKick, KickMsg)	--AskInfo
+	Frame.RightSide.Kick.Text = "Kicking the player."
+	wait(0.5)
+	Frame.RightSide.Kick.Text = "Kicking the player.."
+	wait(0.5)
+	Frame.RightSide.Kick.Text = "Kicking the player..."
+	wait(0.3)
+	Frame.RightSide.Kick.Text = "Successfully kicked the player!"
+	wait(1)
+	reload()
+end)
+
+Frame.RightSide.UnBan.MouseButton1Click:Connect(function()
+	local plrToUnban = Frame.LeftSide.idLabel.Text
+	local msg = "Player is currently unbanned!"
+	game.ReplicatedStorage.UnbanRequest:FireServer(plrToUnban, msg)
+	Frame.RightSide.UnBan.Text = "Unbanning player."
+	wait(0.3)
+	Frame.RightSide.UnBan.Text = "Unbanning player.."
+	wait(0.2)
+	Frame.RightSide.UnBan.Text = "Unbanning player..."
+	wait(0.3)
+	Frame.RightSide.UnBan.Text = "Unban"
+	reload()
+end)
+
+Frame.RightSide.Sword.MouseButton1Click:Connect(function()
+	local plrToGiveSword = Frame.LeftSide.PlrNameLabel.Text
+	local swordMsg = "Succesfully gave player sword!"
+	game:GetService("ReplicatedStorage").SwordRequest:FireServer(plrToGiveSword, swordMsg)
+end)
+
+Frame.RightSide.CommitDie.MouseButton1Click:Connect(function()
+	local plrToCommitDie = Frame.LeftSide.PlrNameLabel.Text
+	local dieMsg = "Made the player commit die"
+	game:GetService("ReplicatedStorage").CommitDieRequest:FireServer(plrToCommitDie, dieMsg)
+end)
+
+Frame.RightSide.Btools.MouseButton1Click:Connect(function()
+	local plrToGiveBtools = Frame.LeftSide.PlrNameLabel.Text
+	local btoolsMsg = "Gave the player btools"
+	game:GetService("ReplicatedStorage").BtoolsRequest:FireServer(plrToGiveBtools, btoolsMsg)
+end)
+
+Frame.RightSide.MessageSubmit.MouseButton1Click:Connect(function()
+	local plrThatSent = game.Players.LocalPlayer.Name
+	local msgText = Frame.RightSide.ServerMessageInput.Text
+	game:GetService("ReplicatedStorage").MessageRequest:FireServer(plrThatSent, msgText)
+end)
+
+game.ReplicatedStorage.SendClient.OnClientEvent:Connect(function(boolean)
+	if boolean then
+		print("Player is currently banned!")
+		Frame.LeftSide.StatusText.Text = "Player is currently banned"
+	else
+		print("Player is currently UNbanned!")
+		Frame.LeftSide.StatusText.Text = "Player is currently unbanned"
+	end
+end)
