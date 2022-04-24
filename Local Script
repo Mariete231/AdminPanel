@@ -1,3 +1,4 @@
+--Variables
 local Toggle = script.Parent.Toggle				
 local Frame = script.Parent.AdminFrame
 local suggestion = Frame.Suggestion
@@ -5,11 +6,11 @@ local mod = game.Players.LocalPlayer
 local serverRemote = game.ReplicatedStorage.MessageRequest
 local msgUI = game.ReplicatedStorage.MessageGui
 
-Toggle.MouseButton1Click:Connect(function()
+Toggle.MouseButton1Click:Connect(function() --when a button is clicked:
 	if script.Parent.AdminFrame.Position == UDim2.new(0.5,0,0.5,0) then
 		script.Parent.AdminFrame:TweenPosition(UDim2.new(0.5,0,-1,0), "InOut", "Quart", 1, false)
 	else
-		script.Parent.AdminFrame:TweenPosition(UDim2.new(0.5,0,0.5,0), "InOut", "Quart", 1, false)
+		script.Parent.AdminFrame:TweenPosition(UDim2.new(0.5,0,0.5,0), "InOut", "Quart", 1, false) --tween plays so the UI comes from the top to the bottom
 	end
 end)
 
@@ -17,10 +18,10 @@ local plr
 
 function findPlayer(name) 							
 	for i, plr in pairs(game.Players:GetPlayers()) do
-		name = name:lower()
+		name = name:lower() --makes player's name all no-caps
 		local testName = (plr.Name):lower():sub(1, #name) 
-		if (testName == name) then
-			print("Found the player's name! Suggesting it to the moderator.")
+		if (testName == name) then --if name is found then
+			print("Found the player's name! Suggesting it to the moderator.") --name suggestion appears
 			return plr
 		end
 	end
@@ -44,23 +45,9 @@ function setup()
 	Frame.RightSide.UnBan.Visible = true
 end
 
-Frame.RightSide.MessageSubmit.MouseButton1Click:Connect(function(text)
-	local gui = game.ReplicatedStorage.MessageGui
-	gui.Frame.SenderLabel.Text = game.Players.LocalPlayer.Name
-	gui.Frame.HeadshotLabel.Image = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-end)
-
-game.ReplicatedStorage.MessageClientRequest.OnClientEvent:Connect(function(text)
-	msgUI.Frame.SenderLabel.Text = game.Players.LocalPlayer.Name
-	msgUI.Frame.HeadShotLabel.Text = game.Players:GetUserThumbnailAsync(game.Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-	msgUI.Frame.MessageLabel.Text = text
-	local clone = msgUI:Clone()
-	clone.Parent = game.Players.LocalPlayer.PlayerGui
-end)
-
 
 suggestion.Activated:Connect(function()
-	if (Frame.Suggestion.Text ~= "") then
+	if (Frame.Suggestion.Text ~= "") then --if suggestion text isn't blank then
 		Frame.LeftSide.PlrNameLabel.Text = Frame.Suggestion.Text
 		suggestion.Visible = false
 		Frame.SearchBar.Text = ""
@@ -68,7 +55,7 @@ suggestion.Activated:Connect(function()
 		local playerI = game.Players:FindFirstChild(playerN).UserId
 		Frame.LeftSide.idLabel.Text = playerI
 		
-		Frame.LeftSide.UserImage.Image = game.Players:GetUserThumbnailAsync(playerI, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+		Frame.LeftSide.UserImage.Image = game.Players:GetUserThumbnailAsync(playerI, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150) --setup plr's userid, ban status, username and avatar headshot
 		setup()
 	end
 end)
