@@ -1,3 +1,4 @@
+--Variables
 local DSS = game:GetService("DataStoreService")
 local banDS = DSS:GetDataStore("banDS")
 local msgUI = game.ReplicatedStorage.MessageGui
@@ -11,20 +12,20 @@ game.Players.PlayerAdded:Connect(function(plr)
 	if (succ) then
 		if (val) then
 			if (val[2] == true) then
-				plr:Kick("\n You are permanently banned. \n Reason: \n"..val[1])
+				plr:Kick("\n You are permanently banned. \n Reason: \n"..val[1]) --permanently bans the player if success
 				print("Player has been banned and kicked!")
 			end
 		end
 	else
-		print("There was an error while checking: "..plr.UserId.." , "..plr.Name)
+		print("There was an error while checking: "..plr.UserId.." , "..plr.Name) --gives error if failure to ban
 		warn(val)
 	end
 end)
 
-game.ReplicatedStorage.SwordRequest.OnServerEvent:Connect(function(player, plrToGiveSword, swordMsg)
+game.ReplicatedStorage.SwordRequest.OnServerEvent:Connect(function(player, plrToGiveSword, swordMsg) --function triggers when remote fires
 	local plr = game.Players:FindFirstChild(plrToGiveSword)
 	if plr then
-		game.ServerStorage.ClassicSword:Clone().Parent = plr.Backpack
+		game.ServerStorage.ClassicSword:Clone().Parent = plr.Backpack --gives a sword to selected player
 		print(plrToGiveSword .. " got a sword.")
 		else warn("No sword for player :(")
 	end
@@ -36,22 +37,22 @@ game.ReplicatedStorage.CommitDieRequest.OnServerEvent:Connect(function(player, p
 		print(plr)
 		local character = plr.Character or plr.CharacterAdded:Wait()
 		local head = character.Head
-		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
+		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2) -- increases head size
 		task.wait(1)
 		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
 		task.wait(1)
 		character.Head.Size = Vector3.new(head.Size.X * 2, head.Size.Y * 2, head.Size.Z * 2)
 		task.wait(1)
-		character.Head:Destroy()
+		character.Head:Destroy() --destroys plr's head (makes it die)
 		print("haha "..plrToCommitDie .."  went brrr")
 		else warn("no player to commit die :(")
 	end
 end)
 
 game.ReplicatedStorage.BtoolsRequest.OnServerEvent:Connect(function(plr, plrToGiveBtools, btoolsMsg)
-	local plr = game.Players:FindFirstChild(plrToGiveBtools)
+	local plr = game.Players:FindFirstChild(plrToGiveBtools) --plrToGiveTools is a string, trying to find in players
 	if plr then
-		game.ServerStorage.BuildingTools.Parent = plr.Backpack
+		game.ServerStorage.BuildingTools.Parent = plr.Backpack --gives player btools if successfully found
 		print(btoolsMsg)
 		else warn("Couldn't find player: action failed")
 	end
@@ -67,15 +68,15 @@ game.ReplicatedStorage.BanRequest.OnServerEvent:Connect(function(plr, plrToBan, 
 	local success, err = pcall(function()
 		banDS:SetAsync(key, {BanMsg, true})
 	end)
-	local playerName = game.Players:GetNameFromUserIdAsync(plrToBan)
+	local playerName = game.Players:GetNameFromUserIdAsync(plrToBan) --gets target's name from its userID
 	if game.Players:FindFirstChild(playerName) then
-		game.Players:FindFirstChild(playerName):Kick("You are banned from the game! \n Reason: \n"..BanMsg)
+		game.Players:FindFirstChild(playerName):Kick("You are banned from the game! \n Reason: \n"..BanMsg) --if player is found, it's banned
 	end
 end)
 
 game.ReplicatedStorage.KickRequest.OnServerEvent:Connect(function(plr, plrToKick, kickMsg)
-	print(plrToKick)
-	game.Players:FindFirstChild(plrToKick):Kick(kickMsg)
+	print(plrToKick) --prints plr to kick's name
+	game.Players:FindFirstChild(plrToKick):Kick(kickMsg) --kicks the target with the selected message
 end)
 
 game.ReplicatedStorage.AskServer.OnServerEvent:Connect(function(plr, plrid)
@@ -110,7 +111,7 @@ end)
 game.ReplicatedStorage.UnbanRequest.OnServerEvent:Connect(function(plr, plrToUnban, msg)
 	local key = plrToUnban.."-banned"
 	local success, err = pcall(function()
-		banDS:SetAsync(key, {msg, false})
+		banDS:SetAsync(key, {msg, false}) --unbans the player setting the ban status to false
 	end)
 end)
 
